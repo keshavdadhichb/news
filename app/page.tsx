@@ -1,65 +1,123 @@
-import Image from "next/image";
+"use client";
+import { useEffect, useState } from "react";
+import { usePortfolioStore } from "@/store/portfolioStore";
+import PinGateway from "@/components/PinGateway";
+import DashboardPage from "@/components/DashboardPage";
+import PortfolioManager from "@/components/PortfolioManager";
+import AiBriefing from "@/components/AiBriefing";
+import BottomNav from "@/components/BottomNav";
+import DadModeToggle from "@/components/DadModeToggle";
+
+type Tab = "dashboard" | "portfolio" | "briefing";
+
+const TAB_TITLES: Record<Tab, string> = {
+  dashboard: "IntelVest",
+  portfolio: "Portfolio",
+  briefing: "AI Briefing",
+};
 
 export default function Home() {
+  const { isAuthenticated } = usePortfolioStore();
+  const [activeTab, setActiveTab] = useState<Tab>("dashboard");
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch — Zustand store reads localStorage on client only
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100dvh",
+        background: "var(--bg-base)",
+      }}>
+        <div style={{ fontSize: "32px" }}>IV</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <PinGateway />;
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div style={{ minHeight: "100dvh", background: "var(--bg-base)" }}>
+      {/* Top Header */}
+      <header style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+        background: "rgba(250, 250, 250, 0.92)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(0,0,0,0.06)",
+        padding: "12px 16px",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {/* Logo */}
+            <div style={{
+              width: "32px",
+              height: "32px",
+              background: "var(--text-primary)",
+              borderRadius: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "13px",
+              fontWeight: 900,
+              color: "white",
+            }}>
+              IV
+            </div>
+            <h1 style={{ fontSize: "18px", fontWeight: 900 }}>
+              {TAB_TITLES[activeTab]}
+            </h1>
+          </div>
+
+          {/* Badge: live indicator */}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "5px",
+            background: "var(--color-success-bg)",
+            border: "1px solid var(--color-success)",
+            borderRadius: "8px",
+            padding: "4px 10px",
+          }}>
+            <span
+              className="pulse-soft"
+              style={{
+                width: "6px",
+                height: "6px",
+                background: "var(--color-success)",
+                borderRadius: "50%",
+                display: "inline-block",
+              }}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-success-text)" }}>
+              LIVE
+            </span>
+          </div>
         </div>
+
+        {/* Dad Mode Toggle — always visible at top */}
+        <DadModeToggle />
+      </header>
+
+      {/* Page Content */}
+      <main>
+        {activeTab === "dashboard" && <DashboardPage />}
+        {activeTab === "portfolio" && <PortfolioManager />}
+        {activeTab === "briefing" && <AiBriefing />}
       </main>
+
+      {/* Bottom Navigation */}
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 }

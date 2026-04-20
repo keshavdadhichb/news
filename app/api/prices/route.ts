@@ -17,11 +17,12 @@ export async function GET(req: NextRequest) {
     await Promise.all(
       tickers.map(async (ticker) => {
         try {
-          const quote = await yahooFinance.quote(ticker, {}, { validateResult: false });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const quote = await yahooFinance.quote(ticker, {}, { validateResult: false }) as any;
           results[ticker] = {
-            price: quote.regularMarketPrice ?? 0,
-            changePct: quote.regularMarketChangePercent ?? 0,
-            name: quote.shortName ?? ticker,
+            price: quote?.regularMarketPrice ?? 0,
+            changePct: quote?.regularMarketChangePercent ?? 0,
+            name: quote?.shortName ?? ticker,
           };
         } catch {
           results[ticker] = { price: 0, changePct: 0, name: ticker };
