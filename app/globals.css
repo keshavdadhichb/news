@@ -1,26 +1,352 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ============================================
+   IntelVest — Soft Minimal Brutalism Theme
+   ============================================ */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Background & Surface */
+  --bg-base: #FAFAFA;
+  --bg-card: #FFFFFF;
+  --bg-muted: #F3F3F3;
+
+  /* Text */
+  --text-primary: #0F0F0F;
+  --text-secondary: #555555;
+  --text-muted: #999999;
+
+  /* Brand / Accent */
+  --accent-blue: #2563EB;
+  --accent-blue-light: #EFF6FF;
+
+  /* Semantic Colors */
+  --color-success: #4ADE80;       /* Soft mint green */
+  --color-success-bg: #F0FDF4;
+  --color-success-text: #166534;
+  --color-warning: #FB923C;       /* Warm amber */
+  --color-warning-bg: #FFF7ED;
+  --color-warning-text: #9A3412;
+  --color-danger: #F87171;        /* Soft pastel red */
+  --color-danger-bg: #FEF2F2;
+  --color-danger-text: #991B1B;
+
+  /* Brutalist Design Tokens */
+  --border-default: 2px solid rgba(0, 0, 0, 0.1);
+  --border-strong: 2px solid rgba(0, 0, 0, 0.2);
+  --shadow-card: 4px 4px 0px 0px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 6px 6px 0px 0px rgba(0, 0, 0, 0.12);
+  --shadow-button: 3px 3px 0px 0px rgba(0, 0, 0, 0.15);
+
+  /* Radius */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+
+  /* Spacing */
+  --page-padding: 16px;
+
+  /* Font */
+  --font-primary: 'Space Grotesk', 'Inter', system-ui, sans-serif;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* === Reset & Base === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* === Utility Classes (Brutalist Design System) === */
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover, .card:active {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--text-primary);
+  color: white;
+  border: 2px solid var(--text-primary);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-button);
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 14px 24px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  -webkit-user-select: none;
+  width: 100%;
+}
+
+.btn-primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border: var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-button);
+  font-family: var(--font-primary);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-secondary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.15);
+}
+
+/* Tags / Badges */
+.tag-success {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  display: inline-block;
+}
+
+.tag-warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border: 1px solid var(--color-warning);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  display: inline-block;
+}
+
+.tag-danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border: 1px solid var(--color-danger);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  display: inline-block;
+}
+
+/* Number / Financial Typography */
+.num-xl {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+.num-lg {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.num-md {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.label-muted {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Progress bar for stop-loss / target */
+.progress-bar {
+  height: 6px;
+  border-radius: 6px;
+  background: #E5E7EB;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+/* Toggle Switch */
+.toggle-track {
+  width: 52px;
+  height: 28px;
+  border-radius: 14px;
+  border: 2px solid rgba(0,0,0,0.15);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.toggle-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Page container */
+.page-container {
+  padding: 0 var(--page-padding) 100px;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: var(--border-default);
+  padding: 8px 0 env(safe-area-inset-bottom, 8px);
+  z-index: 100;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+/* Pill indicator for active nav */
+.nav-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 16px;
+  border-radius: 12px;
+  transition: background 0.2s ease;
+  cursor: pointer;
+  -webkit-user-select: none;
+}
+
+.nav-pill.active {
+  background: var(--text-primary);
+}
+
+.nav-pill.active svg,
+.nav-pill.active span {
+  color: white;
+}
+
+/* Skeleton loader */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* Micro-interactions */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  animation: fadeUp 0.35s ease forwards;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.pulse-soft {
+  animation: pulse-soft 2s ease infinite;
+}
+
+/* Scrollbar hide */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Markdown content styling (for AI Briefing) */
+.markdown-content h1, .markdown-content h2, .markdown-content h3 {
+  font-weight: 800;
+  margin-bottom: 8px;
+  margin-top: 20px;
+}
+.markdown-content h1 { font-size: 22px; }
+.markdown-content h2 { font-size: 18px; }
+.markdown-content h3 { font-size: 16px; }
+
+.markdown-content p { margin-bottom: 12px; color: var(--text-secondary); line-height: 1.7; font-size: 15px; }
+.markdown-content ul, .markdown-content ol { padding-left: 20px; margin-bottom: 12px; }
+.markdown-content li { margin-bottom: 6px; color: var(--text-secondary); font-size: 15px; }
+.markdown-content strong { color: var(--text-primary); font-weight: 700; }
+.markdown-content blockquote {
+  border-left: 3px solid var(--text-primary);
+  padding-left: 12px;
+  margin: 12px 0;
+  color: var(--text-muted);
+  font-style: italic;
 }
