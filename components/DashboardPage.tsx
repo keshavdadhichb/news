@@ -4,198 +4,196 @@ import {
   formatINR,
   formatPct,
   getHoldingPnl,
-  isNearBoundary,
-  getStopLossProximity,
-  getTargetProximity,
 } from "@/lib/formatters";
 import { useState, useEffect } from "react";
-import { TrendingUp, TrendingDown, ChevronDown, ChevronUp, AlertTriangle, Target } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronRight, AlertTriangle, Target, X, MessageSquare, History, Activity } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
-const ASSET_TYPE_LABEL: Record<string, string> = {
-  stock: "STOCK",
-  mutual_fund: "MF",
-  etf: "ETF",
-};
-
-const SIGNAL_STYLE: Record<string, string> = {
-  Buy: "tag-success",
-  Hold: "tag-warning",
-  Exit: "tag-danger",
-};
-
-function HoldingCard({ holding }: { holding: Holding }) {
-  const [expanded, setExpanded] = useState(false);
+function HoldingDetailModal({ 
+  holding, 
+  onClose 
+}: { 
+  holding: Holding; 
+  onClose: () => void 
+}) {
+  const [intel, setIntel] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const { invested, current, pnl, pnlPct } = getHoldingPnl(holding);
   const isProfit = pnl >= 0;
-  const near = isNearBoundary(holding, 5);
-  const stopProximity = getStopLossProximity(holding);
-  const targetProximity = getTargetProximity(holding);
-  const dayChange = holding.daysChangePct;
 
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/ai-briefing`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ symbols: [holding.ticker], holdings: [holding] })
+        });
+        const data = await res.json();
+        setIntel(data.briefing);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [holding.id, holding.ticker]);
+
+  return (
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.7)",
+      zIndex: 1000,
+      display: "flex",
+      alignItems: "flex-end",
+    }} onClick={onClose}>
+      <div style={{
+        background: "var(--bg-base)",
+        width: "100%",
+        maxWidth: "500px",
+        margin: "0 auto",
+        maxHeight: "92dvh",
+        borderTopLeftRadius: "24px",
+        borderTopRightRadius: "24px",
+        padding: "24px 20px",
+        overflowY: "auto",
+        position: "relative",
+        boxShadow: "0 -8px 32px rgba(0,0,0,0.2)",
+      }} onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
+          <div>
+            <h2 style={{ fontSize: "22px", fontWeight: 900 }}>{holding.name}</h2>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-muted)", marginTop: "2px" }}>
+              {holding.ticker} · {holding.sector}
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: "var(--bg-muted)", border: "none", borderRadius: "50%", padding: "8px", cursor: "pointer" }}>
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Quick Stats */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
+          <div className="card" style={{ padding: "16px", background: "var(--bg-muted)" }}>
+            <div className="label-muted">Current Value</div>
+            <div style={{ fontSize: "20px", fontWeight: 900 }}>{formatINR(current)}</div>
+            <div style={{ color: isProfit ? "var(--color-success-text)" : "var(--color-danger-text)", fontWeight: 800, fontSize: "14px", marginTop: "4px" }}>
+              {isProfit ? "+" : ""}{formatINR(pnl)} ({formatPct(pnlPct)})
+            </div>
+          </div>
+          <div className="card" style={{ padding: "16px", background: "var(--bg-muted)" }}>
+            <div className="label-muted">Units Held</div>
+            <div style={{ fontSize: "20px", fontWeight: 900 }}>{holding.quantity}</div>
+            <div className="label-muted" style={{ marginTop: "4px" }}>Avg: {formatINR(holding.averageBuyPrice)}</div>
+          </div>
+        </div>
+
+        {/* Sections */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          {/* Market Intel section */}
+          <section>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+              <MessageSquare size={18} color="var(--text-primary)" />
+              <h3 style={{ fontSize: "16px", fontWeight: 800 }}>Market Intel</h3>
+            </div>
+            <div className="card" style={{ background: "var(--bg-card)", padding: "16px", minHeight: "100px" }}>
+              {loading ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div className="skeleton" style={{ height: "14px", width: "100%" }} />
+                  <div className="skeleton" style={{ height: "14px", width: "90%" }} />
+                </div>
+              ) : (
+                <div className="markdown-content" style={{ fontSize: "14px", lineHeight: 1.6 }}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{intel || "No specific intel available right now."}</ReactMarkdown>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Transaction History */}
+          <section>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+              <History size={18} color="var(--text-primary)" />
+              <h3 style={{ fontSize: "16px", fontWeight: 800 }}>Transaction Log</h3>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {holding.transactions?.map(tx => (
+                <div key={tx.id} style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  padding: "12px 14px",
+                  background: "var(--bg-card)",
+                  borderRadius: "12px",
+                  border: "var(--border-default)"
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: "14px" }}>{tx.type === 'buy' ? 'BOUGHT' : 'SOLD'}</div>
+                    <div style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 600 }}>
+                      {new Date(tx.date).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontWeight: 800, fontSize: "14px" }}>{formatINR(tx.total)}</div>
+                    <div style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 600 }}>
+                      {tx.quantity} units @ {formatINR(tx.price)}
+                    </div>
+                  </div>
+                </div>
+              )) || <div className="label-muted">No transactions found.</div>}
+            </div>
+          </section>
+        </div>
+
+        <button 
+          className="btn-primary" 
+          onClick={onClose} 
+          style={{ marginTop: "32px", width: "100%" }}
+        >
+          Close Full View
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function HoldingCard({ holding, onClick }: { holding: Holding; onClick: () => void }) {
+  const { invested, current, pnl, pnlPct } = getHoldingPnl(holding);
+  const isProfit = pnl >= 0;
   const pnlColor = isProfit ? "var(--color-success-text)" : "var(--color-danger-text)";
-  const dayColor = dayChange >= 0 ? "var(--color-success-text)" : "var(--color-danger-text)";
 
   return (
     <div
-      className={`card fade-up`}
+      className="card fade-up"
       style={{
         padding: "16px",
         marginBottom: "12px",
         cursor: "pointer",
-        borderLeft: near ? "3px solid var(--color-warning)" : undefined,
+        transition: "transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
       }}
-      onClick={() => setExpanded((v) => !v)}
+      onClick={onClick}
     >
-      {/* Header Row */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-            <span style={{ fontSize: "16px", fontWeight: 800, color: "var(--text-primary)" }}>
-              {holding.name}
-            </span>
-            {near && <AlertTriangle size={14} color="var(--color-warning)" />}
-          </div>
-          <div style={{ display: "flex", gap: "6px", marginTop: "4px", flexWrap: "wrap" }}>
-            <span className="label-muted">{holding.ticker.replace(".NS", "").replace(".BO", "")}</span>
-            <span style={{ fontSize: "11px", fontWeight: 700, background: "var(--bg-muted)", borderRadius: "6px", padding: "1px 6px", color: "var(--text-secondary)" }}>
-              {ASSET_TYPE_LABEL[holding.assetType]}
-            </span>
-            {holding.sector && (
-              <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 500 }}>
-                {holding.sector}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <div className="num-md" style={{ color: "var(--text-primary)" }}>
-            {formatINR(current)}
-          </div>
-          <div style={{ fontSize: "13px", fontWeight: 700, color: pnlColor }}>
-            {formatPct(pnlPct)} {isProfit ? "↑" : "↓"}
-          </div>
-        </div>
-      </div>
-
-      {/* P&L Row */}
-      <div style={{
-        display: "flex",
-        gap: "12px",
-        marginTop: "12px",
-        padding: "10px 12px",
-        background: isProfit ? "var(--color-success-bg)" : "var(--color-danger-bg)",
-        borderRadius: "12px",
-        flexWrap: "wrap",
-      }}>
-        <div>
-          <div className="label-muted">Invested</div>
-          <div style={{ fontWeight: 700, fontSize: "14px" }}>{formatINR(invested)}</div>
-        </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ flex: 1 }}>
-          <div className="label-muted">P&amp;L</div>
-          <div style={{ fontWeight: 800, fontSize: "15px", color: pnlColor }}>
-            {isProfit ? "+" : ""}{formatINR(pnl)}
+          <div style={{ fontSize: "16px", fontWeight: 800 }}>{holding.name}</div>
+          <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+            <span className="label-muted">{holding.ticker.replace(".NS", "")}</span>
+            <span style={{ fontSize: "10px", fontWeight: 800, background: "var(--bg-muted)", borderRadius: "4px", padding: "1px 5px", color: "var(--text-secondary)" }}>
+              {holding.assetType.replace("_", " ").toUpperCase()}
+            </span>
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div className="label-muted">Today</div>
-          <div style={{ fontWeight: 700, fontSize: "14px", color: dayColor }}>
-            {formatPct(dayChange)}
+          <div style={{ fontSize: "16px", fontWeight: 900 }}>{formatINR(current)}</div>
+          <div style={{ fontSize: "12px", fontWeight: 700, color: pnlColor }}>
+            {isProfit ? "+" : ""}{formatPct(pnlPct)}
           </div>
         </div>
-      </div>
-
-      {/* AI Signal */}
-      {holding.aiSignal && (
-        <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
-          <span className="label-muted">AI SAYS:</span>
-          <span className={SIGNAL_STYLE[holding.aiSignal]}>{holding.aiSignal}</span>
-        </div>
-      )}
-
-      {/* Expanded: Technical Details */}
-      {expanded && (
-        <div style={{ marginTop: "14px", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: "14px" }}>
-          {/* Price Info */}
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-            <div>
-              <div className="label-muted">Avg Buy Price</div>
-              <div style={{ fontWeight: 700 }}>{formatINR(holding.averageBuyPrice)}</div>
-            </div>
-            <div>
-              <div className="label-muted">CMP</div>
-              <div style={{ fontWeight: 700 }}>{formatINR(holding.currentPrice)}</div>
-            </div>
-            <div>
-              <div className="label-muted">Qty</div>
-              <div style={{ fontWeight: 700 }}>{holding.quantity}</div>
-            </div>
-          </div>
-
-          {/* Stop Loss Progress */}
-          {holding.stopLoss && (
-            <div style={{ marginBottom: "10px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--color-danger-text)" }}>
-                  Stop Loss: {formatINR(holding.stopLoss)}
-                </span>
-                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                  Distance: {(((holding.currentPrice - holding.stopLoss) / holding.currentPrice) * 100).toFixed(1)}%
-                </span>
-              </div>
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${Math.min(100, Math.max(0, stopProximity ?? 0))}%`,
-                    background: `var(--color-danger)`,
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Target Price Progress */}
-          {holding.targetPrice && (
-            <div style={{ marginBottom: "10px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--color-success-text)" }}>
-                  <Target size={12} style={{ display: "inline", marginRight: "3px" }} />
-                  Target: {formatINR(holding.targetPrice)}
-                </span>
-                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                  Upside: {(((holding.targetPrice - holding.currentPrice) / holding.currentPrice) * 100).toFixed(1)}%
-                </span>
-              </div>
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${Math.min(100, Math.max(0, targetProximity ?? 0))}%`,
-                    background: `var(--color-success)`,
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* AI Signal */}
-          {holding.aiSignal && (
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
-              <span className="label-muted">AI Signal:</span>
-              <span className={SIGNAL_STYLE[holding.aiSignal]}>{holding.aiSignal}</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>
-        {expanded ? (
-          <ChevronUp size={16} color="var(--text-muted)" />
-        ) : (
-          <ChevronDown size={16} color="var(--text-muted)" />
-        )}
+        <ChevronRight size={18} color="var(--text-muted)" style={{ marginLeft: "12px" }} />
       </div>
     </div>
   );
@@ -204,176 +202,144 @@ function HoldingCard({ holding }: { holding: Holding }) {
 export default function DashboardPage() {
   const { holdings, lastSyncTime, updatePrices } = usePortfolioStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedHolding, setSelectedHolding] = useState<Holding | null>(null);
 
-  // Auto-refresh every 5 minutes
   useEffect(() => {
-    // Initial fetch if never synced
-    if (!lastSyncTime && holdings.length > 0) {
-      refreshPrices();
-    }
-
-    const interval = setInterval(() => {
-      if (holdings.length > 0) {
-        refreshPrices();
-      }
-    }, 5 * 60 * 1000); // 5 minutes
-
+    if (!lastSyncTime && holdings.length > 0) refreshPrices();
+    const interval = setInterval(() => { if (holdings.length > 0) refreshPrices(); }, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [holdings.length]);
 
-  // Calculate portfolio totals
-  let totalInvested = 0;
-  let totalCurrent = 0;
-  holdings.forEach((h) => {
-    const { invested, current } = getHoldingPnl(h);
-    totalInvested += invested;
-    totalCurrent += current;
-  });
-  const totalPnl = totalCurrent - totalInvested;
-  const totalPnlPct = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
-  const isProfit = totalPnl >= 0;
+  // Calculate totals
+  const stocks = holdings.filter(h => h.assetType !== "mutual_fund");
+  const mfs = holdings.filter(h => h.assetType === "mutual_fund");
 
-  // Refresh live prices
+  const calc = (list: Holding[]) => {
+    let inv = 0, cur = 0;
+    list.forEach(h => {
+      const { invested, current } = getHoldingPnl(h);
+      inv += invested; cur += current;
+    });
+    return { inv, cur, pnl: cur - inv, pct: inv > 0 ? ((cur - inv) / inv) * 100 : 0 };
+  };
+
+  const stockStats = calc(stocks);
+  const mfStats = calc(mfs);
+  const grandTotal = stockStats.cur + mfStats.cur;
+  const grandInv = stockStats.inv + mfStats.inv;
+  const grandPnl = grandTotal - grandInv;
+  const grandPnlPct = grandInv > 0 ? (grandPnl / grandInv) * 100 : 0;
+
   const refreshPrices = async () => {
     setRefreshing(true);
     try {
-      const stocksEtfs = holdings
-        .filter((h) => h.assetType !== "mutual_fund")
-        .map((h) => h.ticker);
-      const mfs = holdings
-        .filter((h) => h.assetType === "mutual_fund" && h.isinCode)
-        .map((h) => h.isinCode!);
+      const stockTickers = stocks.map(h => h.ticker);
+      const mfIsins = mfs.filter(h => h.isinCode).map(h => h.isinCode!);
+      
+      const priceMap: Record<string, { price: number; changePct: number }> = {};
 
-      if (stocksEtfs.length > 0) {
-        const res = await fetch(`/api/prices?symbols=${stocksEtfs.join(",")}`);
+      if (stockTickers.length > 0) {
+        const res = await fetch(`/api/prices?symbols=${stockTickers.join(",")}`);
         const data = await res.json();
         if (data.data) {
-          const priceMap: Record<string, { price: number; changePct: number }> = {};
-          Object.entries(data.data).forEach(([k, v]: [string, unknown]) => {
-            const val = v as { price: number; changePct: number };
-            priceMap[k] = { price: val.price, changePct: val.changePct };
+          Object.entries(data.data).forEach(([k, v]: [any, any]) => {
+            priceMap[k] = { price: v.price, changePct: v.changePct };
           });
-          updatePrices(priceMap);
         }
       }
 
-      if (mfs.length > 0) {
-        const res = await fetch(`/api/mf-nav?isins=${mfs.join(",")}`);
+      if (mfIsins.length > 0) {
+        const res = await fetch(`/api/mf-nav?isins=${mfIsins.join(",")}`);
         const data = await res.json();
         if (data.data) {
-          const priceMap: Record<string, { price: number; changePct: number }> = {};
-          holdings
-            .filter((h) => h.assetType === "mutual_fund" && h.isinCode)
-            .forEach((h) => {
-              const nav = data.data[h.isinCode!];
-              if (nav) {
-                priceMap[h.ticker] = { price: nav.nav, changePct: 0 };
-              }
-            });
-          updatePrices(priceMap);
+          mfs.forEach(h => {
+            const nav = data.data[h.isinCode!];
+            if (nav) priceMap[h.ticker] = { price: nav.nav, changePct: 0 };
+          });
         }
       }
-    } catch (err) {
-      console.error("Price refresh failed:", err);
-    } finally {
-      setRefreshing(false);
-    }
+      updatePrices(priceMap);
+    } catch (err) { console.error(err); } 
+    finally { setRefreshing(false); }
   };
 
   return (
     <div className="page-container" style={{ paddingTop: "20px" }}>
-      {/* Portfolio Summary Card */}
-      <div
-        className="card"
-        style={{
-          padding: "24px",
-          marginBottom: "20px",
-          background: "var(--text-primary)",
-          color: "white",
-          border: "none",
-        }}
-      >
-        <div className="label-muted" style={{ color: "rgba(255,255,255,0.5)" }}>
-          Total Portfolio Value
+      {/* Black Summary Card - Cumulative View */}
+      <div className="card" style={{
+        padding: "24px",
+        marginBottom: "24px",
+        background: "var(--text-primary)",
+        color: "white",
+        border: "none",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.15)"
+      }}>
+        <div style={{ fontSize: "12px", fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "1px" }}>
+          Net Portfolio Value
         </div>
-        <div className="num-xl" style={{ color: "white", marginTop: "4px" }}>
-          {formatINR(totalCurrent, true)}
+        <div style={{ fontSize: "32px", fontWeight: 900, marginTop: "4px", color: "white" }}>
+          {formatINR(grandTotal, true)}
         </div>
-
-        <div style={{ display: "flex", gap: "16px", marginTop: "16px" }}>
-          <div>
-            <div style={{ fontSize: "11px", fontWeight: 600, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              Invested
-            </div>
-            <div style={{ fontWeight: 700, fontSize: "16px" }}>{formatINR(totalInvested, true)}</div>
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: "11px", fontWeight: 600, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              Total P&amp;L
-            </div>
-            <div style={{ fontWeight: 800, fontSize: "18px", color: isProfit ? "#4ADE80" : "#F87171" }}>
-              {isProfit ? "+" : ""}{formatINR(totalPnl, true)} ({formatPct(totalPnlPct)})
-            </div>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            {isProfit ? (
-              <TrendingUp size={32} color="#4ADE80" />
-            ) : (
-              <TrendingDown size={32} color="#F87171" />
-            )}
-          </div>
-        </div>
-
-        {/* Refresh button */}
-        <button
-          onClick={(e) => { e.stopPropagation(); refreshPrices(); }}
-          style={{
-            marginTop: "16px",
-            background: "rgba(255,255,255,0.12)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            borderRadius: "10px",
-            color: "white",
-            fontWeight: 600,
-            fontSize: "13px",
-            padding: "8px 16px",
-            cursor: "pointer",
+        
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+          <div style={{ 
+            color: grandPnl >= 0 ? "#4ADE80" : "#F87171", 
+            fontWeight: 800, 
+            fontSize: "15px",
             display: "flex",
             alignItems: "center",
-            gap: "6px",
+            gap: "4px"
+          }}>
+            {grandPnl >= 0 ? <TrendingUp size={16}/> : <TrendingDown size={16}/>}
+            {grandPnl >= 0 ? "+" : ""}{formatINR(grandPnl, true)} ({formatPct(grandPnlPct)})
+          </div>
+        </div>
+
+        {/* Breakdown Row */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "20px", paddingTop: "16px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+          <div>
+            <div className="label-muted" style={{ color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", gap: "4px" }}>
+              <Activity size={10} /> STOCKS/ETFs
+            </div>
+            <div style={{ fontWeight: 800, fontSize: "16px" }}>{formatINR(stockStats.cur)}</div>
+          </div>
+          <div>
+            <div className="label-muted" style={{ color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", gap: "4px" }}>
+              <TrendingUp size={10} /> MUTUAL FUNDS
+            </div>
+            <div style={{ fontWeight: 800, fontSize: "16px" }}>{formatINR(mfStats.cur)}</div>
+          </div>
+        </div>
+
+        <button 
+          onClick={refreshPrices} 
+          disabled={refreshing}
+          style={{ 
+            marginTop: "20px", width: "100%", background: "rgba(255,255,255,0.1)", border: "none", 
+            borderRadius: "10px", color: "white", padding: "10px", fontWeight: 700, fontSize: "13px", cursor: "pointer" 
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span>{refreshing ? "↻ Refreshing…" : "↻ Refresh Prices"}</span>
-            {lastSyncTime && (
-              <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>
-                Synced {new Date(lastSyncTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            )}
-          </div>
+          {refreshing ? "Refreshing Data..." : "Refresh Market Prices"}
         </button>
       </div>
 
-      {/* Holdings Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-        <h2 style={{ fontSize: "18px", fontWeight: 800 }}>Your Holdings</h2>
-        <span style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 600 }}>
-          {holdings.length} assets
-        </span>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        <h2 style={{ fontSize: "18px", fontWeight: 900 }}>Top Holdings</h2>
+        <div style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700 }}>{holdings.length} ASSETS</div>
       </div>
 
-      {/* Holdings List */}
-      {holdings.length === 0 ? (
-        <div className="card" style={{ padding: "32px", textAlign: "center" }}>
-          <div style={{ fontSize: "36px", marginBottom: "12px" }}>📊</div>
-          <div style={{ fontWeight: 700, marginBottom: "4px" }}>No holdings yet</div>
-          <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>
-            Add your first trade from the Portfolio tab
-          </div>
-        </div>
-      ) : (
-        holdings.map((holding) => (
-          <HoldingCard key={holding.id} holding={holding} />
-        ))
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {holdings.length === 0 ? (
+          <div className="card" style={{ padding: "40px", textAlign: "center" }}>No holdings found.</div>
+        ) : (
+          holdings.map(h => (
+            <HoldingCard key={h.id} holding={h} onClick={() => setSelectedHolding(h)} />
+          ))
+        )}
+      </div>
+
+      {selectedHolding && (
+        <HoldingDetailModal holding={selectedHolding} onClose={() => setSelectedHolding(null)} />
       )}
     </div>
   );

@@ -339,14 +339,35 @@ export default function PortfolioManager() {
         </div>
       ) : (
         <>
-          <div style={{ marginBottom: "12px" }}>
-            <span style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 600 }}>
-              {holdings.length} {holdings.length === 1 ? "holding" : "holdings"}
-            </span>
-          </div>
-          {holdings.map((h) => (
-            <HoldingRow key={h.id} holding={h} onDelete={removeHolding} />
-          ))}
+          {/* Stocks & ETFs Section */}
+          {holdings.filter(h => h.assetType !== "mutual_fund").length > 0 && (
+            <div style={{ marginBottom: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", borderBottom: "2px solid var(--bg-muted)", paddingBottom: "8px" }}>
+                <h2 style={{ fontSize: "14px", fontWeight: 800, color: "var(--text-secondary)", textTransform: "uppercase" }}>Stocks &amp; ETFs</h2>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>
+                  {formatINR(holdings.filter(h => h.assetType !== "mutual_fund").reduce((acc, h) => acc + getHoldingPnl(h).current, 0))}
+                </span>
+              </div>
+              {holdings.filter(h => h.assetType !== "mutual_fund").map((h) => (
+                <HoldingRow key={h.id} holding={h} onDelete={removeHolding} />
+              ))}
+            </div>
+          )}
+
+          {/* Mutual Funds Section */}
+          {holdings.filter(h => h.assetType === "mutual_fund").length > 0 && (
+            <div style={{ marginBottom: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", borderBottom: "2px solid var(--bg-muted)", paddingBottom: "8px" }}>
+                <h2 style={{ fontSize: "14px", fontWeight: 800, color: "var(--text-secondary)", textTransform: "uppercase" }}>Mutual Funds</h2>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>
+                  {formatINR(holdings.filter(h => h.assetType === "mutual_fund").reduce((acc, h) => acc + getHoldingPnl(h).current, 0))}
+                </span>
+              </div>
+              {holdings.filter(h => h.assetType === "mutual_fund").map((h) => (
+                <HoldingRow key={h.id} holding={h} onDelete={removeHolding} />
+              ))}
+            </div>
+          )}
         </>
       )}
     </div>

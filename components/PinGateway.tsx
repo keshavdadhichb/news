@@ -81,7 +81,7 @@ export default function PinGateway() {
         ))}
       </div>
 
-      <p className="pin-default-hint">Default PIN: 1234</p>
+      <p className="pin-default-hint">Default PIN: 1411</p>
 
       <style jsx>{`
         .pin-gateway {
