@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 import { Brain, RefreshCw, Calendar } from "lucide-react";
 
 export default function AiBriefing() {
-  const { holdings, lastBriefing, lastBriefingDate, setBriefing, isDadMode } = usePortfolioStore();
+  const { holdings, lastBriefing, lastBriefingDate, setBriefing } = usePortfolioStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -64,27 +64,7 @@ export default function AiBriefing() {
         </p>
       </div>
 
-      {/* Dad Mode Notice */}
-      {isDadMode && lastBriefing && (
-        <div
-          className="card"
-          style={{
-            padding: "16px",
-            background: "var(--text-primary)",
-            color: "white",
-            border: "none",
-            marginBottom: "16px",
-          }}
-        >
-          <div style={{ fontSize: "11px", fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-            👴 Dad&apos;s Simple Summary
-          </div>
-          {/* Extract Dad Mode Summary from briefing */}
-          <div style={{ fontSize: "16px", lineHeight: 1.6, fontWeight: 500 }}>
-            {extractDadSummary(lastBriefing)}
-          </div>
-        </div>
-      )}
+
 
       {/* Generate Button */}
       <button
@@ -154,16 +134,9 @@ export default function AiBriefing() {
           )}
 
           <div className="markdown-content">
-            {isDadMode ? (
-              <div>
-                <h2 style={{ fontSize: "18px", fontWeight: 800, marginBottom: "12px" }}>Dad Mode Summary</h2>
-                <p style={{ fontSize: "16px", lineHeight: 1.8 }}>{extractDadSummary(lastBriefing)}</p>
-              </div>
-            ) : (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {lastBriefing}
-              </ReactMarkdown>
-            )}
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {lastBriefing}
+            </ReactMarkdown>
           </div>
         </div>
       )}
@@ -191,13 +164,4 @@ export default function AiBriefing() {
   );
 }
 
-function extractDadSummary(briefing: string): string {
-  // Extract Dad Mode Summary section from the markdown
-  const match = briefing.match(/\*\*Dad Mode Summary[^*]*\*\*[:\s]*([\s\S]+?)(?=\n#{1,3}|\n\*\*|$)/i);
-  if (match) {
-    return match[1].trim().replace(/\*\*/g, "");
-  }
-  // Fallback to first 2 sentences
-  const sentences = briefing.replace(/\*\*.*?\*\*:?\s*/g, "").split(/\.\s+/);
-  return sentences.slice(0, 2).join(". ").trim() + ".";
-}
+
