@@ -66,84 +66,84 @@ const SAMPLE_HOLDINGS: Holding[] = [
     ticker: "HAL.NS",
     name: "HAL",
     assetType: "stock",
-    quantity: 27,
-    averageBuyPrice: 4393.71,
-    currentPrice: 4401.62,
+    quantity: 26.9382,
+    averageBuyPrice: 4401.05,
+    currentPrice: 4401.05,
     daysChangePct: 0,
     sector: "Aerospace",
-    transactions: createTx(27, 4393.71)
+    transactions: createTx(26.9382, 4401.05)
   },
   {
     id: "h2",
     ticker: "GROWWSLVR.NS",
     name: "Groww Silver ETF",
     assetType: "etf",
-    quantity: 1654,
-    averageBuyPrice: 24.25,
-    currentPrice: 24.18,
+    quantity: 447,
+    averageBuyPrice: 89.47,
+    currentPrice: 89.47,
     daysChangePct: 0,
     sector: "Commodities",
-    transactions: createTx(1654, 24.25)
+    transactions: createTx(447, 89.47)
   },
   {
     id: "h3",
     ticker: "HDFCNSM250.NS",
     name: "HDFC Nifty Smallcap 250 ETF",
     assetType: "etf",
-    quantity: 877,
-    averageBuyPrice: 44.13,
+    quantity: 877.01,
+    averageBuyPrice: 44.09,
     currentPrice: 44.09,
     daysChangePct: 0,
     sector: "Smallcap",
-    transactions: createTx(877, 44.13)
+    transactions: createTx(877.01, 44.09)
   },
   {
     id: "h4",
     ticker: "MOM50.NS",
     name: "Motilal Oswal Nifty 50 ETF",
     assetType: "etf",
-    quantity: 650,
-    averageBuyPrice: 52.73,
-    currentPrice: 52.65,
+    quantity: 134.73,
+    averageBuyPrice: 254.00,
+    currentPrice: 254.00,
     daysChangePct: 0,
     sector: "Index",
-    transactions: createTx(650, 52.73)
+    transactions: createTx(134.73, 254.00)
   },
   {
     id: "h5",
     ticker: "GROWWDEFNC.NS",
-    name: "Groww Nifty India Defence ETF",
+    name: "Groww Nifty India Defence",
     assetType: "etf",
-    quantity: 112,
-    averageBuyPrice: 89.03,
-    currentPrice: 89.25,
+    quantity: 295.4,
+    averageBuyPrice: 33.84,
+    currentPrice: 33.84,
     daysChangePct: 0,
     sector: "Defence",
-    transactions: createTx(112, 89.03)
+    transactions: createTx(295.4, 33.84)
   },
   {
     id: "h6",
     ticker: "TATSILV.NS",
-    name: "TATSILV",
+    name: "Tata Silver ETF",
     assetType: "etf",
-    quantity: 6,
-    averageBuyPrice: 28.43,
-    currentPrice: 23.96,
+    quantity: 1.5,
+    averageBuyPrice: 95.34,
+    currentPrice: 95.34,
     daysChangePct: 0,
     sector: "Commodities",
-    transactions: createTx(6, 28.43)
+    transactions: createTx(1.5, 95.34)
   },
   {
     id: "h7",
     ticker: "MON100.NS",
-    name: "Motilal Oswal NASDAQ 100 ETF",
+    name: "Motilal Oswal NASDAQ 100",
     assetType: "etf",
-    quantity: 200,
-    averageBuyPrice: 289.77,
-    currentPrice: 289.77,
+    quantity: 186.95,
+    averageBuyPrice: 310.00,
+    currentPrice: 310.00,
     daysChangePct: 0,
-    sector: "International",
-    transactions: createTx(200, 289.77)
+    sector: "Technology",
+    transactions: createTx(186.95, 310.00)
   },
   // Mutual Funds (ISIN based)
   {
@@ -153,11 +153,11 @@ const SAMPLE_HOLDINGS: Holding[] = [
     assetType: "mutual_fund",
     isinCode: "INF200K01UY4",
     quantity: 3769.31,
-    averageBuyPrice: 34.49,
+    averageBuyPrice: 40.47,
     currentPrice: 40.47,
     daysChangePct: 0,
     sector: "PSU",
-    transactions: createTx(3769.31, 34.49)
+    transactions: createTx(3769.31, 40.47)
   },
   {
     id: "mf2",
@@ -166,11 +166,11 @@ const SAMPLE_HOLDINGS: Holding[] = [
     assetType: "mutual_fund",
     isinCode: "INF209K01Z76",
     quantity: 8516.68,
-    averageBuyPrice: 35.22,
+    averageBuyPrice: 41.24,
     currentPrice: 41.24,
     daysChangePct: 0,
     sector: "PSU",
-    transactions: createTx(8516.68, 35.22)
+    transactions: createTx(8516.68, 41.24)
   },
   {
     id: "mf3",
@@ -179,11 +179,11 @@ const SAMPLE_HOLDINGS: Holding[] = [
     assetType: "mutual_fund",
     isinCode: "INF227K01231",
     quantity: 2766.07,
-    averageBuyPrice: 27.11,
+    averageBuyPrice: 29.12,
     currentPrice: 29.12,
     daysChangePct: 0,
     sector: "Gold",
-    transactions: createTx(2766.07, 27.11)
+    transactions: createTx(2766.07, 29.12)
   },
   {
     id: "mf4",
@@ -192,11 +192,11 @@ const SAMPLE_HOLDINGS: Holding[] = [
     assetType: "mutual_fund",
     isinCode: "INF179K01QS3",
     quantity: 5328.07,
-    averageBuyPrice: 18.77,
+    averageBuyPrice: 18.49,
     currentPrice: 18.49,
     daysChangePct: 0,
     sector: "Index",
-    transactions: createTx(5328.07, 18.77)
+    transactions: createTx(5328.07, 18.49)
   },
   {
     id: "mf5",
@@ -205,11 +205,11 @@ const SAMPLE_HOLDINGS: Holding[] = [
     assetType: "mutual_fund",
     isinCode: "INF200K01642",
     quantity: 1955.12,
-    averageBuyPrice: 51.15,
+    averageBuyPrice: 50.33,
     currentPrice: 50.33,
     daysChangePct: 0,
     sector: "Banking",
-    transactions: createTx(1955.12, 51.15)
+    transactions: createTx(1955.12, 50.33)
   },
   {
     id: "mf6",
@@ -218,11 +218,11 @@ const SAMPLE_HOLDINGS: Holding[] = [
     assetType: "mutual_fund",
     isinCode: "INF666M01AA2",
     quantity: 11047.07,
-    averageBuyPrice: 10.07,
+    averageBuyPrice: 9.90,
     currentPrice: 9.90,
     daysChangePct: 0,
     sector: "Equity",
-    transactions: createTx(11047.07, 10.07)
+    transactions: createTx(11047.07, 9.90)
   },
   {
     id: "mf7",
@@ -231,11 +231,11 @@ const SAMPLE_HOLDINGS: Holding[] = [
     assetType: "mutual_fund",
     isinCode: "INF767K01011",
     quantity: 2120.17,
-    averageBuyPrice: 94.33,
+    averageBuyPrice: 92.19,
     currentPrice: 92.19,
     daysChangePct: 0,
     sector: "Equity",
-    transactions: createTx(2120.17, 94.33)
+    transactions: createTx(2120.17, 92.19)
   }
 ];
 
@@ -289,7 +289,7 @@ export const usePortfolioStore = create<PortfolioState>()(
         }),
     }),
     {
-      name: "intelVest-portfolio-v6",
+      name: "intelVest-portfolio-v8",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         holdings: state.holdings,

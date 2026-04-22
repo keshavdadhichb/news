@@ -45,7 +45,7 @@ async function fetchIndianFinanceHeadlines(symbols: string[] = []): Promise<stri
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { holdings } = body;
+    const { holdings, mode } = body;
 
     if (!holdings || !Array.isArray(holdings)) {
       return NextResponse.json({ error: "holdings array required" }, { status: 400 });
@@ -55,21 +55,25 @@ export async function POST(req: NextRequest) {
     const headlines = await fetchIndianFinanceHeadlines(tickerNames);
 
     const portfolioSummary = holdings.map((h: any) => 
-      `${h.name} (${h.ticker}): ${h.quantity} units @ ${h.currentPrice}. P&L: ${h.daysChangePct}%`
+      `${h.name}: ${h.quantity} units @ ${h.currentPrice}. Daily Chg: ${h.daysChangePct}%`
     ).join("\n");
 
+    const isSummary = mode === "summary";
+    const constraints = isSummary 
+      ? "OUTPUT REQUIREMENT: Strictly 2 sentences. Sentence 1: Why the money moved today. Sentence 2: What to do next (Actionable advice)."
+      : SYSTEM_PROMPT;
+
     const prompt = `
-      ${SYSTEM_PROMPT}
+      ${constraints}
 
       Today's Data: ${new Date().toLocaleDateString("en-IN")}
-      User Portfolio:
+      User Portfolio Data:
       ${portfolioSummary}
 
-      Top Headlines:
+      Current Market Context (Headlines):
       ${headlines.join("\n")}
     `;
 
-    // Direct fetch to Gemini API for maximum stability
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     const res = await fetch(url, {
@@ -77,9 +81,9 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
+        generationConfig: { temperature: 0.7, maxOutputTokens: isSummary ? 100 : 800 }
       }),
-      signal: AbortSignal.timeout(8000)
+      signal: AbortSignal.timeout(10000)
     });
 
     let text = "No briefing generated.";
@@ -87,17 +91,17 @@ export async function POST(req: NextRequest) {
       const data = await res.json();
       text = data.candidates?.[0]?.content?.parts?.[0]?.text || text;
     } else {
-      // Create a localized backup briefing if API fails
       const pnlTotal = holdings.reduce((acc, h) => acc + ( (h.currentPrice - h.averageBuyPrice) * h.quantity ), 0);
-      text = `### Local Portfolio Briefing (Backup Mode)\n\nEnvironment issues detected with Gemini API. However, here is your portfolio pulse:\n\n- **Stability:** Your portfolio is currently reporting a total P&L of **${formatINR(pnlTotal)}**. \n- **Key Asset:** ${holdings.sort((a,b) => (b.currentPrice*b.quantity) - (a.currentPrice*a.quantity))[0]?.name} remains your largest position.\n- **Action:** Monitor the Nasdaq 100 (MON100) for global tech trends. \n\n*Please check your GEMINI_API_KEY settings for full AI insights.*`;
+      text = isSummary 
+        ? `Portfolio is stable with total P&L at ${formatINR(pnlTotal)}. Continue monitoring HAL and Nasdaq for volatility.`
+        : `### Local Portfolio Briefing (Backup Mode)\n\nEnvironment issues detected with Gemini API. However, here is your portfolio pulse:\n\n- **Stability:** Your portfolio is reporting total P&L of **${formatINR(pnlTotal)}**. \n- **Key Asset:** ${holdings.sort((a,b) => (b.currentPrice*b.quantity) - (a.currentPrice*a.quantity))[0]?.name} is your lead position.\n\n*Please verify GEMINI_API_KEY for full insights.*`;
     }
 
     return NextResponse.json({ briefing: text });
   } catch (err: any) {
-    console.error("Detailed AI Briefing Error:", err);
-    // Even on structural error, return a graceful 200 with an error message in the body
+    console.error("AI Briefing Error:", err);
     return NextResponse.json({ 
-      briefing: "### Briefing Service Maintenance\n\nWe are currently experiencing technical difficulties generating your AI briefing. Please try again in 5 minutes.\n\n*Tip: Ensure your network connection is stable.*" 
+      briefing: "Market briefing currently unavailable. Please refresh in a moment to see latest AI insights." 
     });
   }
 }
