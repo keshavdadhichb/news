@@ -98,11 +98,14 @@ Please generate the daily briefing.`;
       },
     });
 
-    const text = response.text ?? "No briefing generated. Please try again.";
+    const text = response.text || "No briefing generated. Please try again.";
 
     return NextResponse.json({ briefing: text });
-  } catch (err) {
-    console.error("AI Briefing error:", err);
-    return NextResponse.json({ error: "Failed to generate briefing" }, { status: 500 });
+  } catch (err: any) {
+    console.error("AI Briefing error details:", err);
+    return NextResponse.json({ 
+      error: "Failed to generate briefing", 
+      details: err.message 
+    }, { status: 500 });
   }
 }

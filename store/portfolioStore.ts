@@ -41,77 +41,7 @@ export interface PortfolioState {
 }
 
 // Sample initial holdings for demonstration
-const SAMPLE_HOLDINGS: Holding[] = [
-  {
-    id: "1",
-    ticker: "RELIANCE.NS",
-    name: "Reliance Industries",
-    assetType: "stock",
-    quantity: 10,
-    averageBuyPrice: 2450,
-    currentPrice: 2510,
-    daysChangePct: 1.2,
-    stopLoss: 2300,
-    targetPrice: 2800,
-    sector: "Energy",
-    aiSignal: "Hold",
-  },
-  {
-    id: "2",
-    ticker: "HDFCBANK.NS",
-    name: "HDFC Bank",
-    assetType: "stock",
-    quantity: 15,
-    averageBuyPrice: 1620,
-    currentPrice: 1580,
-    daysChangePct: -0.8,
-    stopLoss: 1500,
-    targetPrice: 1900,
-    sector: "Banking",
-    aiSignal: "Hold",
-  },
-  {
-    id: "3",
-    ticker: "NIFTYBEES.NS",
-    name: "Nippon Nifty BeES ETF",
-    assetType: "etf",
-    quantity: 100,
-    averageBuyPrice: 220,
-    currentPrice: 232,
-    daysChangePct: 0.5,
-    stopLoss: 200,
-    targetPrice: 260,
-    sector: "Index",
-    aiSignal: "Buy",
-  },
-  {
-    id: "4",
-    ticker: "INF174K01LS2",
-    name: "Kotak Flexi Cap Fund",
-    assetType: "mutual_fund",
-    quantity: 120.5,
-    averageBuyPrice: 52,
-    currentPrice: 58.3,
-    daysChangePct: 0.3,
-    sector: "Equity",
-    isinCode: "INF174K01LS2",
-    aiSignal: "Hold",
-  },
-  {
-    id: "5",
-    ticker: "TCS.NS",
-    name: "Tata Consultancy Services",
-    assetType: "stock",
-    quantity: 5,
-    averageBuyPrice: 3900,
-    currentPrice: 4150,
-    daysChangePct: 2.1,
-    stopLoss: 3600,
-    targetPrice: 4500,
-    sector: "IT",
-    aiSignal: "Buy",
-  },
-];
+const SAMPLE_HOLDINGS: Holding[] = [];
 
 export const usePortfolioStore = create<PortfolioState>()(
   persist(
