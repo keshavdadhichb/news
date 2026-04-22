@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import yahooFinance from "yahoo-finance2";
+import YahooFinance from "yahoo-finance2";
+
+const yf = new YahooFinance();
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -18,7 +20,7 @@ export async function GET(req: NextRequest) {
       tickers.map(async (ticker) => {
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const quote = await yahooFinance.quote(ticker, {}, { validateResult: false }) as any;
+          const quote = await yf.quote(ticker, {}, { validateResult: false }) as any;
           results[ticker] = {
             price: quote?.regularMarketPrice ?? 0,
             changePct: quote?.regularMarketChangePercent ?? 0,

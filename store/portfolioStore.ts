@@ -24,16 +24,15 @@ export interface Holding {
 
 export interface PortfolioState {
   holdings: Holding[];
-  isDadMode: boolean;
   isAuthenticated: boolean;
   pin: string;
   lastBriefing: string | null;
   lastBriefingDate: string | null;
+  lastSyncTime: string | null;
 
   // Actions
   setAuthenticated: (val: boolean) => void;
   setPin: (pin: string) => void;
-  setDadMode: (val: boolean) => void;
   addHolding: (holding: Holding) => void;
   updateHolding: (id: string, updates: Partial<Holding>) => void;
   removeHolding: (id: string) => void;
@@ -118,15 +117,14 @@ export const usePortfolioStore = create<PortfolioState>()(
   persist(
     (set, get) => ({
       holdings: SAMPLE_HOLDINGS,
-      isDadMode: false,
       isAuthenticated: false,
       pin: "1234",
       lastBriefing: null,
       lastBriefingDate: null,
+      lastSyncTime: null,
 
       setAuthenticated: (val) => set({ isAuthenticated: val }),
       setPin: (pin) => set({ pin }),
-      setDadMode: (val) => set({ isDadMode: val }),
 
       addHolding: (holding) =>
         set((state) => ({ holdings: [...state.holdings, holding] })),
@@ -155,6 +153,7 @@ export const usePortfolioStore = create<PortfolioState>()(
               lastUpdated: new Date().toISOString(),
             };
           }),
+          lastSyncTime: new Date().toISOString(),
         })),
 
       setBriefing: (text) =>
@@ -168,10 +167,10 @@ export const usePortfolioStore = create<PortfolioState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         holdings: state.holdings,
-        isDadMode: state.isDadMode,
         pin: state.pin,
         lastBriefing: state.lastBriefing,
         lastBriefingDate: state.lastBriefingDate,
+        lastSyncTime: state.lastSyncTime,
         // isAuthenticated intentionally NOT persisted
       }),
     }

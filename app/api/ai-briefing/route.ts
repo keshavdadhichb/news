@@ -3,43 +3,41 @@ import { GoogleGenAI } from "@google/genai";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "AIzaSyDEzuR5NT-n0NYq18VGbYfmL0rKHE0yRig";
 
-const SYSTEM_PROMPT = `You are an elite, highly personalized financial advisor and quantitative analyst. Your task is to analyze the provided user portfolio and current market data to generate a daily briefing. 
+const SYSTEM_PROMPT = `You are a world-class financial risk analyst and personalized investment advisor. Your goal is to provide a "Serious Warnings & Opportunities" briefing.
 
 Context Constraints:
-1. You are speaking directly to a retail investor. 
-2. The user holds Indian equities (NSE/BSE) and Mutual Funds. Currency is INR (₹).
-3. Be concise, objective, and action-oriented. No fluff. No generic market summaries unless they directly impact the specific holdings provided.
-4. Output must be formatted in clean Markdown.
-
-Input Format:
-You will receive a JSON object containing the user's holdings: { ticker, quantity, average_buy_price, current_price, days_change_pct, stop_loss, target_price, sector }. You will also receive today's top financial news headlines.
+1. High-Precision Analysis: Focus exclusively on the user's provided holdings and how current news affects them directly.
+2. Serious Tone: Be direct, analytical, and pull no punches. If an investment is at risk, say it clearly.
+3. Actionable Insights: Provide specific suggestions (e.g., "Consider tightening stop-loss" or "Sector headwinds detected").
+4. Output must be clean Markdown.
 
 Output Requirements:
-1. **Portfolio Health Pulse:** A 1-sentence summary of the portfolio's day.
-2. **Critical Alerts:** ONLY list assets that are within 5% of their stop-loss or target price, or assets directly impacted by today's macroeconomic news. If none, omit this section.
-3. **Asset-Specific Intelligence:** Provide 2-3 bullet points explaining *why* the biggest movers in the portfolio moved today, referencing real-world news or sector trends.
-4. **Dad Mode Summary:** Provide a 2-sentence ultra-simple summary of the entire day that a 65-year-old non-technical father would easily understand.
+1. **Critical Alerts & Warnings:** List any serious risks (stop-loss breaches, negative sector news, earnings misses for these specific tickers). Use ⚠️ for high risk.
+2. **Real-time News Matrix:** 2-3 bullet points of news specifically relevant to the user's tickers or their sectors.
+3. **Strategic Suggestions:** Tactical advice based on today's price action and news.
+4. **Portfolio Pulse:** A one-sentence summary of the overall health.
 
-Tone: Calm, analytical, authoritative, and deeply personalized.`;
+Tone: Serious, professional, and deeply analytical.`;
 
 // Fetch simulated news headlines using a lightweight source
-async function fetchIndianFinanceHeadlines(): Promise<string[]> {
+async function fetchIndianFinanceHeadlines(symbols: string[] = []): Promise<string[]> {
   try {
+    const symbolQuery = symbols.length > 0 ? `(${symbols.join(" OR ")})` : "Indian Stock Market";
     const res = await fetch(
-      "https://newsapi.org/v2/everything?q=India+stock+market+NSE+BSE&language=en&pageSize=5&sortBy=publishedAt",
+      `https://newsapi.org/v2/everything?q=${encodeURIComponent(symbolQuery + " NSE BSE Finance")}&language=en&pageSize=10&sortBy=publishedAt`,
       { headers: { "X-Api-Key": "demo" }, signal: AbortSignal.timeout(4000) }
     );
     if (!res.ok) throw new Error("News API failed");
     const data = await res.json();
-    return (data.articles ?? []).slice(0, 5).map((a: { title: string }) => a.title);
+    return (data.articles ?? []).slice(0, 10).map((a: { title: string }) => a.title);
   } catch {
     // Fall back to static contextual headlines
     return [
-      "Nifty 50 consolidates near all-time highs amid mixed global cues",
-      "RBI holds repo rate steady; inflation within target band",
-      "FII inflows surge as global risk appetite returns",
-      "IT sector rally gains momentum on US tech earnings beat",
-      "Auto sector faces headwinds as EV transition accelerates",
+      "Market Update: Nifty 50 and Sensex show volatility amid global cues",
+      "Banking & Infrastructure sectors lead as FII investment shifts",
+      "Regulatory updates: New rules for derivative trading on NSE discussed",
+      "Corporate Earnings: Major Indian firms report mixed quarterly results",
+      "Macro Update: RBI MPC meeting hints at future interest rate trajectory",
     ];
   }
 }
@@ -53,7 +51,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "holdings array required" }, { status: 400 });
     }
 
-    const headlines = await fetchIndianFinanceHeadlines();
+    const tickerNames = holdings.map((h: any) => h.name.split(" ")[0]); // Use first word of company name for better news search
+    const headlines = await fetchIndianFinanceHeadlines(tickerNames);
 
     const portfolioData = holdings.map((h: {
       ticker: string;

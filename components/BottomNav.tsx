@@ -1,11 +1,12 @@
 "use client";
-import { BarChart2, PlusCircle, Brain, Home } from "lucide-react";
+import { BarChart2, PlusCircle, Brain, Home, MessageSquare } from "lucide-react";
 
-type Tab = "dashboard" | "portfolio" | "briefing";
+type Tab = "dashboard" | "portfolio" | "chat" | "briefing";
 
 const NAV_ITEMS = [
   { id: "dashboard" as Tab, label: "Home", Icon: Home },
   { id: "portfolio" as Tab, label: "Portfolio", Icon: PlusCircle },
+  { id: "chat" as Tab, label: "Chat", Icon: MessageSquare },
   { id: "briefing" as Tab, label: "AI Brief", Icon: Brain },
 ];
 

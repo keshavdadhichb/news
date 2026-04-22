@@ -23,7 +23,7 @@ const SIGNAL_STYLE: Record<string, string> = {
   Exit: "tag-danger",
 };
 
-function HoldingCard({ holding, isDadMode }: { holding: Holding; isDadMode: boolean }) {
+function HoldingCard({ holding }: { holding: Holding }) {
   const [expanded, setExpanded] = useState(false);
   const { invested, current, pnl, pnlPct } = getHoldingPnl(holding);
   const isProfit = pnl >= 0;
@@ -106,16 +106,16 @@ function HoldingCard({ holding, isDadMode }: { holding: Holding; isDadMode: bool
         </div>
       </div>
 
-      {/* Dad Mode: AI Signal */}
-      {isDadMode && holding.aiSignal && (
+      {/* AI Signal */}
+      {holding.aiSignal && (
         <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
           <span className="label-muted">AI SAYS:</span>
           <span className={SIGNAL_STYLE[holding.aiSignal]}>{holding.aiSignal}</span>
         </div>
       )}
 
-      {/* Expanded: Technical Details (hidden in Dad Mode) */}
-      {expanded && !isDadMode && (
+      {/* Expanded: Technical Details */}
+      {expanded && (
         <div style={{ marginTop: "14px", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: "14px" }}>
           {/* Price Info */}
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
@@ -190,24 +190,36 @@ function HoldingCard({ holding, isDadMode }: { holding: Holding; isDadMode: bool
         </div>
       )}
 
-      {/* Chevron */}
-      {!isDadMode && (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>
-          {expanded ? (
-            <ChevronUp size={16} color="var(--text-muted)" />
-          ) : (
-            <ChevronDown size={16} color="var(--text-muted)" />
-          )}
-        </div>
-      )}
+      <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>
+        {expanded ? (
+          <ChevronUp size={16} color="var(--text-muted)" />
+        ) : (
+          <ChevronDown size={16} color="var(--text-muted)" />
+        )}
+      </div>
     </div>
   );
 }
 
 export default function DashboardPage() {
-  const { holdings, isDadMode } = usePortfolioStore();
+  const { holdings, lastSyncTime, updatePrices } = usePortfolioStore();
   const [refreshing, setRefreshing] = useState(false);
-  const { updatePrices } = usePortfolioStore();
+
+  // Auto-refresh every 5 minutes
+  useEffect(() => {
+    // Initial fetch if never synced
+    if (!lastSyncTime && holdings.length > 0) {
+      refreshPrices();
+    }
+
+    const interval = setInterval(() => {
+      if (holdings.length > 0) {
+        refreshPrices();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(interval);
+  }, [holdings.length]);
 
   // Calculate portfolio totals
   let totalInvested = 0;
@@ -330,7 +342,14 @@ export default function DashboardPage() {
             gap: "6px",
           }}
         >
-          <span>{refreshing ? "↻ Refreshing…" : "↻ Refresh Prices"}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span>{refreshing ? "↻ Refreshing…" : "↻ Refresh Prices"}</span>
+            {lastSyncTime && (
+              <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>
+                Synced {new Date(lastSyncTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+          </div>
         </button>
       </div>
 
@@ -353,7 +372,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         holdings.map((holding) => (
-          <HoldingCard key={holding.id} holding={holding} isDadMode={isDadMode} />
+          <HoldingCard key={holding.id} holding={holding} />
         ))
       )}
     </div>

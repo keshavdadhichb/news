@@ -5,14 +5,15 @@ import PinGateway from "@/components/PinGateway";
 import DashboardPage from "@/components/DashboardPage";
 import PortfolioManager from "@/components/PortfolioManager";
 import AiBriefing from "@/components/AiBriefing";
+import TxChat from "@/components/TxChat";
 import BottomNav from "@/components/BottomNav";
-import DadModeToggle from "@/components/DadModeToggle";
 
-type Tab = "dashboard" | "portfolio" | "briefing";
+type Tab = "dashboard" | "portfolio" | "chat" | "briefing";
 
 const TAB_TITLES: Record<Tab, string> = {
   dashboard: "IntelVest",
   portfolio: "Portfolio",
+  chat: "Transactions",
   briefing: "AI Briefing",
 };
 
@@ -105,14 +106,13 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Dad Mode Toggle — always visible at top */}
-        <DadModeToggle />
       </header>
 
       {/* Page Content */}
       <main>
         {activeTab === "dashboard" && <DashboardPage />}
         {activeTab === "portfolio" && <PortfolioManager />}
+        {activeTab === "chat" && <TxChat />}
         {activeTab === "briefing" && <AiBriefing />}
       </main>
 
