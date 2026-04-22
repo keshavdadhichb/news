@@ -78,23 +78,31 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
-      })
+      }),
+      signal: AbortSignal.timeout(8000)
     });
 
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(`Gemini API failed: ${res.status} ${JSON.stringify(errData)}`);
+    let text = "No briefing generated.";
+    if (res.ok) {
+      const data = await res.json();
+      text = data.candidates?.[0]?.content?.parts?.[0]?.text || text;
+    } else {
+      // Create a localized backup briefing if API fails
+      const pnlTotal = holdings.reduce((acc, h) => acc + ( (h.currentPrice - h.averageBuyPrice) * h.quantity ), 0);
+      text = `### Local Portfolio Briefing (Backup Mode)\n\nEnvironment issues detected with Gemini API. However, here is your portfolio pulse:\n\n- **Stability:** Your portfolio is currently reporting a total P&L of **${formatINR(pnlTotal)}**. \n- **Key Asset:** ${holdings.sort((a,b) => (b.currentPrice*b.quantity) - (a.currentPrice*a.quantity))[0]?.name} remains your largest position.\n- **Action:** Monitor the Nasdaq 100 (MON100) for global tech trends. \n\n*Please check your GEMINI_API_KEY settings for full AI insights.*`;
     }
-
-    const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No briefing generated.";
 
     return NextResponse.json({ briefing: text });
   } catch (err: any) {
     console.error("Detailed AI Briefing Error:", err);
+    // Even on structural error, return a graceful 200 with an error message in the body
     return NextResponse.json({ 
-      error: "Briefing service unavailable", 
-      message: err.message 
-    }, { status: 500 });
+      briefing: "### Briefing Service Maintenance\n\nWe are currently experiencing technical difficulties generating your AI briefing. Please try again in 5 minutes.\n\n*Tip: Ensure your network connection is stable.*" 
+    });
   }
+}
+
+// Minimalist formatINR for fallback
+function formatINR(v: number) {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(v);
 }

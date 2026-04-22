@@ -87,8 +87,8 @@ const SAMPLE_HOLDINGS: Holding[] = [
   },
   {
     id: "h3",
-    ticker: "SMALLCAP.NS",
-    name: "SBI Nifty Smallcap 250 ETF",
+    ticker: "HDFCNSM250.NS",
+    name: "HDFC Nifty Smallcap 250 ETF",
     assetType: "etf",
     quantity: 877,
     averageBuyPrice: 44.13,
@@ -99,7 +99,7 @@ const SAMPLE_HOLDINGS: Holding[] = [
   },
   {
     id: "h4",
-    ticker: "MONIFTY50.NS",
+    ticker: "MOM50.NS",
     name: "Motilal Oswal Nifty 50 ETF",
     assetType: "etf",
     quantity: 650,
@@ -289,7 +289,7 @@ export const usePortfolioStore = create<PortfolioState>()(
         }),
     }),
     {
-      name: "intelVest-portfolio-v5",
+      name: "intelVest-portfolio-v6",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         holdings: state.holdings,
