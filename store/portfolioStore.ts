@@ -152,12 +152,12 @@ const SAMPLE_HOLDINGS: Holding[] = [
     name: "SBI PSU Direct Plan Growth",
     assetType: "mutual_fund",
     isinCode: "INF200K01UY4",
-    quantity: 1,
-    averageBuyPrice: 129994,
-    currentPrice: 152544,
+    quantity: 3769.31,
+    averageBuyPrice: 34.49,
+    currentPrice: 40.47,
     daysChangePct: 0,
     sector: "PSU",
-    transactions: createTx(1, 129994)
+    transactions: createTx(3769.31, 34.49)
   },
   {
     id: "mf2",
@@ -165,12 +165,12 @@ const SAMPLE_HOLDINGS: Holding[] = [
     name: "Aditya Birla Sun Life PSU Equity",
     assetType: "mutual_fund",
     isinCode: "INF209K01Z76",
-    quantity: 1,
-    averageBuyPrice: 299985,
-    currentPrice: 351228,
+    quantity: 8516.68,
+    averageBuyPrice: 35.22,
+    currentPrice: 41.24,
     daysChangePct: 0,
     sector: "PSU",
-    transactions: createTx(1, 299985)
+    transactions: createTx(8516.68, 35.22)
   },
   {
     id: "mf3",
@@ -178,12 +178,12 @@ const SAMPLE_HOLDINGS: Holding[] = [
     name: "UTI Gold ETF FoF",
     assetType: "mutual_fund",
     isinCode: "INF227K01231",
-    quantity: 1,
-    averageBuyPrice: 74996,
-    currentPrice: 80548,
+    quantity: 2766.07,
+    averageBuyPrice: 27.11,
+    currentPrice: 29.12,
     daysChangePct: 0,
     sector: "Gold",
-    transactions: createTx(1, 74996)
+    transactions: createTx(2766.07, 27.11)
   },
   {
     id: "mf4",
@@ -191,12 +191,12 @@ const SAMPLE_HOLDINGS: Holding[] = [
     name: "HDFC NIFTY50 Equal Weight",
     assetType: "mutual_fund",
     isinCode: "INF179K01QS3",
-    quantity: 1,
-    averageBuyPrice: 99995,
-    currentPrice: 98516,
+    quantity: 5328.07,
+    averageBuyPrice: 18.77,
+    currentPrice: 18.49,
     daysChangePct: 0,
     sector: "Index",
-    transactions: createTx(1, 99995)
+    transactions: createTx(5328.07, 18.77)
   },
   {
     id: "mf5",
@@ -204,12 +204,12 @@ const SAMPLE_HOLDINGS: Holding[] = [
     name: "SBI Banking & Financial Services",
     assetType: "mutual_fund",
     isinCode: "INF200K01642",
-    quantity: 1,
-    averageBuyPrice: 99995,
-    currentPrice: 98401,
+    quantity: 1955.12,
+    averageBuyPrice: 51.15,
+    currentPrice: 50.33,
     daysChangePct: 0,
     sector: "Banking",
-    transactions: createTx(1, 99995)
+    transactions: createTx(1955.12, 51.15)
   },
   {
     id: "mf6",
@@ -217,12 +217,12 @@ const SAMPLE_HOLDINGS: Holding[] = [
     name: "JioBlackRock Flexi Cap",
     assetType: "mutual_fund",
     isinCode: "INF666M01AA2",
-    quantity: 1,
-    averageBuyPrice: 111205,
-    currentPrice: 109366,
+    quantity: 11047.07,
+    averageBuyPrice: 10.07,
+    currentPrice: 9.90,
     daysChangePct: 0,
     sector: "Equity",
-    transactions: createTx(1, 111205)
+    transactions: createTx(11047.07, 10.07)
   },
   {
     id: "mf7",
@@ -230,12 +230,12 @@ const SAMPLE_HOLDINGS: Holding[] = [
     name: "Parag Parikh Flexi Cap",
     assetType: "mutual_fund",
     isinCode: "INF767K01011",
-    quantity: 1,
-    averageBuyPrice: 199990,
-    currentPrice: 195458,
+    quantity: 2120.17,
+    averageBuyPrice: 94.33,
+    currentPrice: 92.19,
     daysChangePct: 0,
     sector: "Equity",
-    transactions: createTx(1, 199990)
+    transactions: createTx(2120.17, 94.33)
   }
 ];
 
@@ -289,7 +289,7 @@ export const usePortfolioStore = create<PortfolioState>()(
         }),
     }),
     {
-      name: "intelVest-portfolio-v4",
+      name: "intelVest-portfolio-v5",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         holdings: state.holdings,

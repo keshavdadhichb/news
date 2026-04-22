@@ -51,61 +51,50 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "holdings array required" }, { status: 400 });
     }
 
-    const tickerNames = holdings.map((h: any) => h.name.split(" ")[0]); // Use first word of company name for better news search
+    const tickerNames = holdings.map((h: any) => h.name.split(" ")[0]);
     const headlines = await fetchIndianFinanceHeadlines(tickerNames);
 
-    const portfolioData = holdings.map((h: {
-      ticker: string;
-      name: string;
-      quantity: number;
-      averageBuyPrice: number;
-      currentPrice: number;
-      daysChangePct: number;
-      stopLoss?: number;
-      targetPrice?: number;
-      sector?: string;
-    }) => ({
-      ticker: h.ticker,
-      name: h.name,
-      quantity: h.quantity,
-      average_buy_price: h.averageBuyPrice,
-      current_price: h.currentPrice,
-      days_change_pct: h.daysChangePct,
-      stop_loss: h.stopLoss ?? null,
-      target_price: h.targetPrice ?? null,
-      sector: h.sector ?? "Unknown",
-    }));
+    const portfolioSummary = holdings.map((h: any) => 
+      `${h.name} (${h.ticker}): ${h.quantity} units @ ${h.currentPrice}. P&L: ${h.daysChangePct}%`
+    ).join("\n");
 
-    const userMessage = `Today's Date: ${new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+    const prompt = `
+      ${SYSTEM_PROMPT}
 
-Portfolio Holdings:
-${JSON.stringify(portfolioData, null, 2)}
+      Today's Data: ${new Date().toLocaleDateString("en-IN")}
+      User Portfolio:
+      ${portfolioSummary}
 
-Today's Top Financial Headlines:
-${headlines.map((h, i) => `${i + 1}. ${h}`).join("\n")}
+      Top Headlines:
+      ${headlines.join("\n")}
+    `;
 
-Please generate the daily briefing.`;
-
-    const genai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
-    const response = await genai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: [{ role: "user", parts: [{ text: userMessage }] }],
-      config: {
-        systemInstruction: SYSTEM_PROMPT,
-        temperature: 0.7,
-        maxOutputTokens: 1500,
-      },
+    // Direct fetch to Gemini API for maximum stability
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+    
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
+      })
     });
 
-    const text = response.text || "No briefing generated. Please try again.";
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(`Gemini API failed: ${res.status} ${JSON.stringify(errData)}`);
+    }
+
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No briefing generated.";
 
     return NextResponse.json({ briefing: text });
   } catch (err: any) {
-    console.error("AI Briefing error details:", err);
+    console.error("Detailed AI Briefing Error:", err);
     return NextResponse.json({ 
-      error: "Failed to generate briefing", 
-      details: err.message 
+      error: "Briefing service unavailable", 
+      message: err.message 
     }, { status: 500 });
   }
 }
