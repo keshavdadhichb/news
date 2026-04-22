@@ -133,6 +133,18 @@ const SAMPLE_HOLDINGS: Holding[] = [
     sector: "Commodities",
     transactions: createTx(6, 28.43)
   },
+  {
+    id: "h7",
+    ticker: "MON100.NS",
+    name: "Motilal Oswal NASDAQ 100 ETF",
+    assetType: "etf",
+    quantity: 200,
+    averageBuyPrice: 289.77,
+    currentPrice: 289.77,
+    daysChangePct: 0,
+    sector: "International",
+    transactions: createTx(200, 289.77)
+  },
   // Mutual Funds (ISIN based)
   {
     id: "mf1",
