@@ -201,7 +201,7 @@ function HoldingRow({ holding, onClick }: { holding: Holding; onClick: () => voi
 }
 
 export default function DashboardPage() {
-  const { holdings, updatePrices, lastBriefing } = usePortfolioStore();
+  const { holdings, updatePrices, lastBriefing, resetBaseline } = usePortfolioStore();
   const [refreshing, setRefreshing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [selectedHolding, setSelectedHolding] = useState<Holding | null>(null);
@@ -309,7 +309,19 @@ export default function DashboardPage() {
               )}
             </div>
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "#999" }}>INVESTED</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ fontSize: "11px", fontWeight: 700, color: "#999" }}>INVESTED</div>
+                <button 
+                  onClick={() => {
+                    if(confirm("Confirm Perfect Reset? This will set your current values as the new baseline (Zero Returns).")) {
+                      resetBaseline();
+                    }
+                  }}
+                  style={{ fontSize: "9px", background: "none", border: `1px solid ${GROWW_GREEN}`, color: GROWW_GREEN, borderRadius: "4px", padding: "1px 4px", fontWeight: 700, cursor: "pointer" }}
+                >
+                  SYNC
+                </button>
+              </div>
               <div style={{ fontSize: "16px", fontWeight: 800, color: "#222", marginTop: "2px" }}>{formatINR(totals.inv, true)}</div>
             </div>
           </div>

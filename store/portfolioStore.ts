@@ -47,6 +47,7 @@ export interface PortfolioState {
   removeHolding: (id: string) => void;
   updatePrices: (prices: Record<string, { price: number; changePct: number }>) => void;
   setBriefing: (text: string) => void;
+  resetBaseline: () => void;
 }
 
 const createTx = (qty: number, price: number): Transaction[] => [{
@@ -287,6 +288,19 @@ export const usePortfolioStore = create<PortfolioState>()(
           lastBriefing: text,
           lastBriefingDate: new Date().toISOString(),
         }),
+
+      resetBaseline: () =>
+        set((state) => ({
+          holdings: state.holdings.map((h) => ({
+            ...h,
+            averageBuyPrice: h.currentPrice,
+            transactions: h.transactions?.map((tx) => ({
+              ...tx,
+              price: h.currentPrice,
+              total: tx.quantity * h.currentPrice,
+            })),
+          })),
+        })),
     }),
     {
       name: "intelVest-portfolio-v8",
