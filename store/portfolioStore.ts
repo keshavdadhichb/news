@@ -289,7 +289,7 @@ export const usePortfolioStore = create<PortfolioState>()(
         }),
     }),
     {
-      name: "intelVest-portfolio",
+      name: "intelVest-portfolio-v4",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         holdings: state.holdings,
