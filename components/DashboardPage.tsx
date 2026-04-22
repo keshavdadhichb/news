@@ -201,7 +201,7 @@ function HoldingRow({ holding, onClick }: { holding: Holding; onClick: () => voi
 }
 
 export default function DashboardPage() {
-  const { holdings, updatePrices, lastBriefing, resetBaseline } = usePortfolioStore();
+  const { holdings, updatePrices, lastBriefing, resetBaseline, nukeAndReset } = usePortfolioStore();
   const [refreshing, setRefreshing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [selectedHolding, setSelectedHolding] = useState<Holding | null>(null);
@@ -279,6 +279,13 @@ export default function DashboardPage() {
       <div style={{ padding: "24px 20px 10px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1 style={{ fontSize: "24px", fontWeight: 900 }}>Investments</h1>
         <div style={{ display: "flex", gap: "12px" }}>
+          <div onClick={() => {
+            if(confirm("DANGER: This will wipe all changes and reset to original ₹13.86L baseline. Continue?")) {
+              nukeAndReset();
+            }
+          }} style={{ width: "36px", height: "36px", borderRadius: "50%", background: GROWW_BG, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <History size={18} color={GROWW_RED} />
+          </div>
           <div onClick={() => setIsAdding(true)} style={{ width: "36px", height: "36px", borderRadius: "50%", background: GROWW_BG, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
             <Plus size={20} color={GROWW_GREEN} />
           </div>
